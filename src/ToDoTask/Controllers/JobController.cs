@@ -220,16 +220,16 @@ namespace ToDoTask.Controllers
                        join u in _context.Users on f.UserId equals u.Id
                        where j.Status == (int)Status.Processing
                        select new JobForView()
-                           {
-                               ProjectName = p.Name,
-                               Id = j.Id,
-                               Name = j.Name,
-                               Content = j.Content,
-                               Status = j.Status,
-                               DateStart = j.DateStart,
-                               UserName  = u.Name,
-                               UserId = u.Id
-                           }).Distinct().ToList();
+                       {
+                            ProjectName = p.Name,
+                            Id = j.Id,
+                            Name = j.Name,
+                            Content = j.Content,
+                            Status = j.Status,
+                            DateStart = j.DateStart,
+                            UserName  = u.Name,
+                            UserId = u.Id
+                       }).Distinct().ToList();
             return View(job);
         }
         public async Task<IActionResult> ListJobComplete()
