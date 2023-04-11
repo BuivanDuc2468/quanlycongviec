@@ -1,0 +1,74 @@
+﻿@using ToDoTask.Constants;
+@using ToDoTask.Models.Contents;
+@model IEnumerable<JobForView>
+@{
+    ViewData["Title"] = "ListJob";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>List Job In Progress</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateStart)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UserName)
+                </td>
+               
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateStart)
+                </td>
+                <td>
+                    <select name="Status" id="Status.@item.Id">
+                        <option value="@Convert.ToInt32(Status.Waitting)">Waitting</option>
+                        <option value="@Convert.ToInt32(Status.Processing)" selected>Processing</option>
+                    </select>
+                </td>
+                <td>
+                    <button><a onclick="SaveStatusOfJob(@item.Id)">Save</a></button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@section Scripts{
+    <script>
+        function SaveStatusOfJob(id){
+            let x= 'Status.'+id;
+            let d = document.getElementById(x).value;
+            $.ajax({
+                url: "/Job/UpdateJob",
+                type: "get",
+                data: "id="+id + "&status="+ d,
+                dataType: 'json',
+                success: function (data) {
+                    location.reload();
+                },
+                error: function (e) {
+                    console.log(e.message);
+                }
+            });
+        }
+    </script>
+}

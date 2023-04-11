@@ -1,0 +1,57 @@
+﻿@using ToDoTask.Data.Entities;
+@using ToDoTask.Models.Contents;
+@model IEnumerable<ToDoTask.Data.Entities.ProjectUser>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>List Assign</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProjectId)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @foreach (var u in ViewBag.User as ICollection<User>)
+                    {
+                        if (item.UserId == u.Id)
+                        {
+                            @Html.DisplayFor(modelItem => u.Name)
+                        }
+                    }
+
+                </td>
+                <td>
+                    @foreach (var p in ViewBag.Project as ICollection<ProjectVm>)
+                    {
+                        if (item.ProjectId == p.Id)
+                        {
+                            @Html.DisplayFor(modelItem => p.Name)
+                        }
+                    }
+                </td>
+                <td>
+                    <a asp-action="Delete" asp-route-id="@item.UserId" asp-route-id2="@item.ProjectId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
