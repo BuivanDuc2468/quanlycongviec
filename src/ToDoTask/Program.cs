@@ -18,6 +18,9 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddDefaultUI()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+builder.Services.AddScoped<UserManager<User>, UserManager<User>>();
+builder.Services.AddScoped<SignInManager<User>, SignInManager<User>>();
+builder.Services.AddScoped<RoleManager<IdentityRole>, RoleManager<IdentityRole>>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<ISequenceService, SequenceService>();
 builder.Services.AddControllersWithViews();
@@ -45,7 +48,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Dashboard}");
 app.MapRazorPages();
 using (var scope = app.Services.CreateScope()){
     await DbSeeder.SeedRolesAndAdminAsync(scope.ServiceProvider);

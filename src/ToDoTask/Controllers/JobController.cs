@@ -70,7 +70,7 @@ namespace ToDoTask.Controllers
         // POST: JobController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(Job jobRequest,List<string> user)
+        public async Task<ActionResult> Create(Job jobRequest)
         {
             try
             {               
@@ -80,31 +80,14 @@ namespace ToDoTask.Controllers
                     Name = jobRequest.Name,
                     ProjectId = jobRequest.ProjectId,
                     Content = jobRequest.Content,
-                    DateLine = jobRequest.DateLine
+                    DateLine = jobRequest.DateLine,
+                    UserId = jobRequest.UserId,
+                    DateAssign = DateTime.Now
                 };
                 var JobId = await _sequenceService.GetNewId();
                 job.Id = JobId;
                 _context.Jobs.Add(job);
-                var result = _context.SaveChanges();
-                if (result > 0)
-                {
-                    foreach (var i in user)
-                    {
-                        var userjob = new UserJob()
-                        {
-                            UserId = i,
-                            JobId = JobId,
-                            DateAssign = DateTime.Now
-                        };
-                        _context.UserJobs.Add(userjob);
-                        await _context.SaveChangesAsync();
-                    }
-                }
-                else
-                {
-                    return RedirectToAction("Index", "Job");
-                }
-                
+                _context.SaveChanges();
                 return RedirectToAction("Index", "Job");
             }
             catch
@@ -112,7 +95,6 @@ namespace ToDoTask.Controllers
                 return View();
             }
         }
-
         // GET: JobController/Edit/5
         public async Task<ActionResult> Edit(int id)
         {
@@ -124,15 +106,7 @@ namespace ToDoTask.Controllers
                                    ProjectName = d.Name
                                }).Distinct().ToList();
             ViewBag.Project = project;
-            var user = (from d in _context.ProjectUsers
-                           join f in _context.Users on d.UserId equals f.Id
-                               select new
-                               {
-                                   UserId = f.Id,
-                                   NameUser = f.Name
-                               }).ToList();
             ViewBag.Project = project;
-            ViewBag.User = user;
             var job = await _context.Jobs.FindAsync(id);
             if (job == null)
                 return RedirectToAction("Index", "Job");
@@ -182,7 +156,17 @@ namespace ToDoTask.Controllers
                     {
                         job.DateComplete = DateTime.Now;
                     }
+
                     job.DateStart = DateTime.Now;
+                    if (status == 1)
+                    {
+                        var project = await _context.Projects.FindAsync(job.ProjectId);
+                        if (project != null)
+                        {
+                            project.Status = (int)Status.Processing;
+                            _context.Projects.Update(project);
+                        }
+                    }
                 }
                 job.Status = status;
                 _context.Jobs.Update(job);
@@ -195,9 +179,8 @@ namespace ToDoTask.Controllers
         public async Task<IActionResult> ListJobWaitting()
         {
             var job = (from j in _context.Jobs
-                       join f in _context.UserJobs on j.Id equals f.JobId
                        join p in _context.Projects on j.ProjectId equals p.Id
-                       join u in _context.Users on f.UserId equals u.Id
+                       join u in _context.Users on j.UserId equals u.Id
                        where j.Status == (int)Status.Waitting
                        select new JobForView()
                            {
@@ -207,7 +190,7 @@ namespace ToDoTask.Controllers
                                Content = j.Content,
                                DateLine = j.DateLine,
                                UserName  = u.Name,
-                               DateAssign = f.DateAssign,
+                               DateAssign = j.DateAssign,
                                Status = (int)Status.Waitting,
                            }).Distinct().ToList();
             return View(job);
@@ -215,9 +198,8 @@ namespace ToDoTask.Controllers
         public async Task<IActionResult> ListJobInProgress()
         {
             var job = (from j in _context.Jobs
-                       join f in _context.UserJobs on j.Id equals f.JobId
                        join p in _context.Projects on j.ProjectId equals p.Id
-                       join u in _context.Users on f.UserId equals u.Id
+                       join u in _context.Users on j.UserId equals u.Id
                        where j.Status == (int)Status.Processing
                        select new JobForView()
                        {
@@ -235,10 +217,9 @@ namespace ToDoTask.Controllers
         public async Task<IActionResult> ListJobComplete()
         {
             var job = (from j in _context.Jobs
-                       join f in _context.UserJobs on j.Id equals f.JobId
                        join p in _context.Projects on j.ProjectId equals p.Id
-                       join u in _context.Users on f.UserId equals u.Id
-                       where j.Status == (int)Status.Processing
+                       join u in _context.Users on j.UserId equals u.Id
+                       where j.Status == (int)Status.Done
                        select new JobForView()
                            {
                                ProjectName = p.Name,
@@ -248,7 +229,6 @@ namespace ToDoTask.Controllers
                                Status = j.Status,
                                DateStart = j.DateStart,
                                DateComplete = j.DateComplete,
-                               DateLine = j.DateLine,
                                UserName  = u.Name
                            }).Distinct().ToList();
             return View(job);

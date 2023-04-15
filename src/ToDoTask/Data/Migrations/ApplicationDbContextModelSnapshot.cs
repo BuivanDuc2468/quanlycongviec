@@ -168,6 +168,9 @@ namespace ToDoTask.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("DateAssign")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("DateComplete")
                         .HasColumnType("datetime2");
 
@@ -189,6 +192,10 @@ namespace ToDoTask.Data.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -219,6 +226,9 @@ namespace ToDoTask.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateLine")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -328,30 +338,15 @@ namespace ToDoTask.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ToDoTask.Data.Entities.UserJob", b =>
-                {
-                    b.Property<string>("JobId")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<string>("UserId")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<DateTime>("DateAssign")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("JobId", "UserId");
-
-                    b.ToTable("UserJobs");
-                });
-
             modelBuilder.Entity("ToDoTask.Models.Contents.ProjectVm", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateLine")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")

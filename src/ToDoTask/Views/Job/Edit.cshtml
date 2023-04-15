@@ -15,7 +15,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="ProjectId" class="control-label"></label>
-                <select name="ProjectId" asp-items="@(new SelectList(ViewBag.Project, "ProjectId", "ProjectName"))"></select>
+                <select name="ProjectId" onchange="eventChangePrjId()" id="ProjectSelected" asp-items="@(new SelectList(ViewBag.Project, "ProjectId", "ProjectName"))"></select>
                 <span asp-validation-for="ProjectId" class="text-danger"></span>
             </div>
             <div class="form-group mt-3">
@@ -29,8 +29,14 @@
                 <span asp-validation-for="Content" class="text-danger"></span>
             </div>
             <div class="form-group mt-3">
-                <label class="control-label"></label>
-                <select name="User" asp-items="@(new SelectList(ViewBag.User, "UserId", "NameUser"))" multiple></select>
+                <label asp-for="DateLine" class="control-label"></label>
+                <input asp-for="DateLine" class="form-control" />
+                <span asp-validation-for="DateLine" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-3">
+                <label asp-for="UserId" class="control-label"></label>
+                <select class="form-control" asp-for="UserId" id="UserVal"></select>
+                <span asp-validation-for="UserId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -43,3 +49,29 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            eventChangePrjId();
+        });
+        function eventChangePrjId() {
+            let ProjectSelected = $("#ProjectSelected").val();
+            $.ajax({
+                url: location.origin + "/Job/loadUserOfProject/?projectId=" + ProjectSelected,
+                type: "post",
+                dataType: 'json',
+                success: function (data) {
+                    var options = '';
+                    for (var x = 0; x < data.length; x++) {
+                        options += '<option value="' + data[x].id + '">' + data[x].name + '</option>';
+                    }
+                    $('#UserVal').html('');
+                    $('#UserVal').html(options);
+                },
+                error: function (e) {
+                    console.log(e.message);
+                }
+            });
+        }
+    </script>
+}

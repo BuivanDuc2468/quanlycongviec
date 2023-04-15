@@ -16,6 +16,7 @@ namespace ToDoTask.Data.Entities
         [Required]
         public int Status { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime DateLine { get; set; }
         [Required]
         [MaxLength(50)]
         [Column(TypeName = "varchar(50)")]

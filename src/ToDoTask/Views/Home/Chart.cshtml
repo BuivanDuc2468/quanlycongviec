@@ -1,0 +1,55 @@
+﻿@using ToDoTask.Models.Contents;
+@model IEnumerable<Statistics>
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_Layout";
+}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Statistical</h1>
+</div>
+<div class="p-2">
+    <table class="table border-primary">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Waitting)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.SlowProgress)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.OnSchedule)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.TotalJob)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Waitting)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SlowProgress)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.OnSchedule)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TotalJob)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

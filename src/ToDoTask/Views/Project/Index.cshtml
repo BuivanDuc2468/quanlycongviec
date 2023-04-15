@@ -1,40 +1,61 @@
-﻿@using ToDoTask.Constants;
+﻿@using ToDoTask.Helpers;
+@using ToDoTask.Constants;
 @using ToDoTask.Data.Entities;
-@model IEnumerable<ToDoTask.Models.Contents.ProjectVm>
+@model IEnumerable<ToDoTask.Data.Entities.Project>
 
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    Pager pager = new Pager();
+    int pagerNo = 0;
+    if(ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager;
+        pagerNo = pager.CurrentPage;
+    }
+
 }
 
 <h1>List Project</h1>
 
+
+<div>
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+        <!-- Sidebar Toggle (Topbar) -->
+        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+        </button>
+        <!-- Topbar Search -->
+        <form asp-action="Index" method="get">
+            <div class="form-actions no-color">
+                <p>
+                    Find: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+                    <input type="submit" value="Search" class="btn btn-default" /> 
+                </p>
+            </div>
+        </form>
+        <!-- Topbar Navbar -->
+    </nav>
+    <!-- End of Topbar -->
 <p>
     <a asp-action="Create">Create New</a>
 </p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserId)
-            </th>
+            <th>Project Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Date Created</th>
+            <th>DateLine</th>
+            <th>Create By</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+    @foreach (var item in Model) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
@@ -45,40 +66,46 @@
             <td>
                 @switch (item.Status)
                 {
-                        case (int)Status.Waitting:
-                            {
-                                <p>@Status.Waitting</p>
-                                break;
-                            }
-                        case (int)Status.Processing:
-                            {
-                                <p>@Status.Processing</p>
-                                break;
-                            }
-                        
-                        case (int)Status.Done:
-                            {
-                                <p>@Status.Done</p>
-                                break;
-                            }
+                    case (int)Status.Waitting:
+                        {
+                            <p>@Status.Waitting</p>
+                            break;
+                        }
+                    case (int)Status.Processing:
+                        {
+                            <p>@Status.Processing</p>
+                            break;
+                        }
+                    case (int)Status.Done:
+                        {
+                            <p>@Status.Done</p>
+                            break;
+                        }
                 }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.CreatedAt)
             </td>
             <td>
-                    @foreach (var i in ViewBag.User as ICollection<User>){
-                        if (item.UserId == i.Id)
-                        {
-                            @Html.DisplayFor(modelItem => i.Name)
-                        }
+                @Html.DisplayFor(modelItem => item.DateLine)
+            </td>
+            <td>
+                @foreach (var user in ViewBag.User){
+                    if (item.UserId == user.UserId)
+                    {
+                                @Html.Raw(user.NameUser)
+                                break;
                     }
+                }
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>
         </tr>
-}
+    }
     </tbody>
 </table>
+   <partial name="_pager" model="@pager" />
+   
+</div>

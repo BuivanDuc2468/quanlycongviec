@@ -13,5 +13,6 @@ namespace ToDoTask.Models.Contents
         public DateTime CreatedAt { get; set; }
         [Display(Name = "User Create")]
         public string UserId { get; set; }
+        public DateTime DateLine { get; set; }
     }
 }

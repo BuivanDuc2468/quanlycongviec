@@ -14,6 +14,9 @@ namespace ToDoTask.Data.Entities
         [Required]
         [Display(Name = "Project")]
         public string ProjectId { get; set; }
+        [Required]
+        [Display(Name = "User")]
+        public string UserId { get; set; }
         [MaxLength(200)]
         [Required]
         public string Name { get; set; }
@@ -23,6 +26,7 @@ namespace ToDoTask.Data.Entities
         public DateTime? DateStart { get; set; }
         public DateTime? DateComplete { get; set; }
         public DateTime DateLine { get; set; }
+        public DateTime DateAssign { get; set; }
 
     }
 }

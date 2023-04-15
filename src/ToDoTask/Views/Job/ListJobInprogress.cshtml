@@ -21,6 +21,9 @@
                 @Html.DisplayNameFor(model => model.DateStart)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.DateLine)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Status)
             </th>
         </tr>
@@ -40,9 +43,12 @@
                     @Html.DisplayFor(modelItem => item.DateStart)
                 </td>
                 <td>
+                    @Html.DisplayFor(modelItem => item.DateLine)
+                </td>
+                <td>
                     <select name="Status" id="Status.@item.Id">
-                        <option value="@Convert.ToInt32(Status.Waitting)">Waitting</option>
                         <option value="@Convert.ToInt32(Status.Processing)" selected>Processing</option>
+                        <option value="@Convert.ToInt32(Status.Done)">Complete</option>
                     </select>
                 </td>
                 <td>

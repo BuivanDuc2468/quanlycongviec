@@ -1,0 +1,50 @@
+﻿@using ToDoTask.Constants;
+@using ToDoTask.Models.Contents;
+@model IEnumerable<JobForView>
+@{
+    ViewData["Title"] = "ListJobComplete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>List Job Complete</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateStart)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateComplete)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UserName)
+                </td>
+               
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateStart)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateComplete)
+                </td>
+                
+            </tr>
+        }
+    </tbody>
+</table>
+
