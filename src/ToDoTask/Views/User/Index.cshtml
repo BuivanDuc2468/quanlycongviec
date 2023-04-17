@@ -1,16 +1,41 @@
 ﻿@using Microsoft.AspNetCore.Identity;
 @using ToDoTask.Constants;
 @using ToDoTask.Data.Entities;
+@using ToDoTask.Helpers;
 @using ToDoTask.Models.Contents;
 @model IEnumerable<ToDoTask.Models.Contents.UserRoleView>
 
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    Pager pager = new Pager();
+    int pagerNo = 0;
+    if(ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager;
+        pagerNo = pager.CurrentPage;
+    }
 }
 
-<h1>List Job</h1>
+<h1>List User</h1>
 
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+    <!-- Sidebar Toggle (Topbar) -->
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+        <i class="fa fa-bars"></i>
+    </button>
+    <!-- Topbar Search -->
+    <form asp-action="Index" method="get">
+        <div class="form-actions no-color">
+            <p>
+                Find: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+                <input type="submit" value="Search" class="btn btn-default" />
+            </p>
+        </div>
+    </form>
+    <!-- Topbar Navbar -->
+</nav>
+<!-- End of Topbar -->
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -50,6 +75,7 @@
         }
     </tbody>
 </table>
+ <partial name="_pager" model="@pager" />
 @section Scripts {
 <script>
         function confirmDelete(Id){

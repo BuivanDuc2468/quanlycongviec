@@ -1,7 +1,10 @@
-﻿using Azure.Core;
+﻿using Azure;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +13,7 @@ using System.Reflection.Metadata;
 using ToDoTask.Constants;
 using ToDoTask.Data;
 using ToDoTask.Data.Entities;
+using ToDoTask.Models;
 using ToDoTask.Models.Contents;
 using ToDoTask.Services;
 using static System.Reflection.Metadata.BlobBuilder;
@@ -28,12 +32,25 @@ namespace ToDoTask.Controllers
             _sequenceService = sequenceService;
         }
         // GET: JobController
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(string? searchString, int page = 1)
         {
-            var Job = await _context.Jobs.ToListAsync();
+            List<Job> job = await _context.Jobs.ToListAsync();
             var project = await _context.Projects.ToListAsync();
             ViewBag.Project = project;
-            return View(Job);
+            const int pageSize = 10;
+            if (page < 1)
+                page = 1;
+            var recsCount = job.Count();
+            var pager = new Pager(recsCount, page, pageSize);
+            int recSkip = (page - 1) * pageSize;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                job = job.Where(n => n.Name.Contains(searchString) || n.Content.Contains(searchString)).ToList();
+            }
+            var data = job.Skip(recSkip).Take(pager.PageSize).ToList();
+            ViewBag.Pager = pager;
+            ViewData["CurrentFilter"] = searchString;
+            return View(data);
         }
 
         // GET: JobController/Details/5
@@ -179,7 +196,7 @@ namespace ToDoTask.Controllers
             return "OK";
         }
         
-        public async Task<IActionResult> ListJobWaitting()
+        public async Task<IActionResult> ListJobWaitting(string? searchString, int page = 1)
         {
             var job = (from j in _context.Jobs
                        join p in _context.Projects on j.ProjectId equals p.Id
@@ -196,9 +213,23 @@ namespace ToDoTask.Controllers
                                DateAssign = j.DateAssign,
                                Status = (int)Status.Waitting,
                            }).Distinct().ToList();
-            return View(job);
+
+            const int pageSize = 10;
+            if (page < 1)
+                page = 1;
+            var recsCount = job.Count();
+            var pager = new Pager(recsCount, page, pageSize);
+            int recSkip = (page - 1) * pageSize;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                job = job.Where(n => n.Name.Contains(searchString) || n.Content.Contains(searchString)).ToList();
+            }
+            var data = job.Skip(recSkip).Take(pager.PageSize).ToList();
+            ViewBag.Pager = pager;
+            ViewData["CurrentFilter"] = searchString;
+            return View(data);
         }
-        public async Task<IActionResult> ListJobInProgress()
+        public async Task<IActionResult> ListJobInProgress(string? searchString, int page = 1)
         {
             var job = (from j in _context.Jobs
                        join p in _context.Projects on j.ProjectId equals p.Id
@@ -215,9 +246,22 @@ namespace ToDoTask.Controllers
                             UserName  = u.Name,
                             UserId = u.Id
                        }).Distinct().ToList();
-            return View(job);
+            const int pageSize = 10;
+            if (page < 1)
+                page = 1;
+            var recsCount = job.Count();
+            var pager = new Pager(recsCount, page, pageSize);
+            int recSkip = (page - 1) * pageSize;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                job = job.Where(n => n.Name.Contains(searchString) || n.UserName.Contains(searchString)).ToList();
+            }
+            var data = job.Skip(recSkip).Take(pager.PageSize).ToList();
+            ViewBag.Pager = pager;
+            ViewData["CurrentFilter"] = searchString;
+            return View(data);
         }
-        public async Task<IActionResult> ListJobComplete()
+        public async Task<IActionResult> ListJobComplete(string? searchString, int page = 1)
         {
             var job = (from j in _context.Jobs
                        join p in _context.Projects on j.ProjectId equals p.Id
@@ -234,7 +278,20 @@ namespace ToDoTask.Controllers
                                DateComplete = j.DateComplete,
                                UserName  = u.Name
                            }).Distinct().ToList();
-            return View(job);
+            const int pageSize = 10;
+            if (page < 1)
+                page = 1;
+            var recsCount = job.Count();
+            var pager = new Pager(recsCount, page, pageSize);
+            int recSkip = (page - 1) * pageSize;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                job = job.Where(n => n.Name.Contains(searchString) || n.UserName.Contains(searchString)).ToList();
+            }
+            var data = job.Skip(recSkip).Take(pager.PageSize).ToList();
+            ViewBag.Pager = pager;
+            ViewData["CurrentFilter"] = searchString;
+            return View(data);
         }
 
     }

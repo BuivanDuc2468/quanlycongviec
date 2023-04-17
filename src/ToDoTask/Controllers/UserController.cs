@@ -6,6 +6,7 @@ using ToDoTask.Data.Entities;
 using ToDoTask.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using ToDoTask.Models;
 
 namespace ToDoTask.Controllers
 {
@@ -25,9 +26,9 @@ namespace ToDoTask.Controllers
         }
         [Authorize]
         [Route("Nguoi-dung")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchString, int page = 1)
         {
-            var result = from u in _context.Users
+            var result = (from u in _context.Users
                          join ur in _context.UserRoles on u.Id equals ur.UserId
                          join r in _context.Roles on ur.RoleId equals r.Id
                          where r.Name != Roles.Admin.ToString()
@@ -37,8 +38,21 @@ namespace ToDoTask.Controllers
                              Email = u.Email, 
                              RoleName = r.Name,
                              RoleId = r.Id
-                         };
-            return View(result);
+                         }).ToList();
+            const int pageSize = 10;
+            if (page < 1)
+                page = 1;
+            var recsCount = result.Count();
+            var pager = new Pager(recsCount, page, pageSize);
+            int recSkip = (page - 1) * pageSize;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                result = result.Where(n => n.Name.Contains(searchString) || n.Email.Contains(searchString)).ToList();
+            }
+            var data = result.Skip(recSkip).Take(pager.PageSize).ToList();
+            ViewBag.Pager = pager;
+            ViewData["CurrentFilter"] = searchString;
+            return View(data);
         }
         [Authorize]
         
