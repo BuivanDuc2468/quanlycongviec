@@ -43,10 +43,29 @@
                     @Html.DisplayFor(modelItem => item.RoleName)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.UserId" >Edit</a>
-                    <a asp-action="Delete" asp-route-id="@item.UserId">Delete</a>
+                    <button><a asp-action="Edit" asp-route-id="@item.UserId">Edit</a></button>
+                    <button onclick="confirmDelete('@item.UserId')">Delete</button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+@section Scripts {
+<script>
+        function confirmDelete(Id){
+            if (confirm("Are you sure delete User?") == true){
+                $.ajax({
+                    url: location.origin + "/User/Delete/?Id=" + Id,
+                    type: "get",
+                    dataType: 'json',
+                    success: function (data) {
+                        location.reload();
+                    },
+                    error: function (e) {
+                        console.log(e.message);
+                    }
+                });
+            }
+        }
+</script>
+}

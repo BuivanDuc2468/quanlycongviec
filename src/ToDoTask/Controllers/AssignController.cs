@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
@@ -11,13 +12,14 @@ namespace ToDoTask.Controllers
 {
     public class AssignController : Controller
     {
+              
         
         private readonly ApplicationDbContext _context;
         public AssignController(ApplicationDbContext context)
         {
             _context = context;
         }
-        
+        [Authorize]
         public async Task<ActionResult> Index()
         {
             var projectUser = await _context.ProjectUsers.ToArrayAsync();
@@ -28,6 +30,7 @@ namespace ToDoTask.Controllers
             ViewBag.User = user;
             return View(projectUser);
         }
+        [Authorize]
         public async Task<IActionResult> Create()
         {
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier);
@@ -37,6 +40,7 @@ namespace ToDoTask.Controllers
             ViewBag.User = user;
             return View();
         }
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(ProjectUserCreateVm request)
         {
@@ -68,7 +72,7 @@ namespace ToDoTask.Controllers
                 return RedirectToAction("Index", "Assign");
             }
         }
-
+        [Authorize]
         public async Task<IActionResult> Delete(string id,string id2)
         {
 

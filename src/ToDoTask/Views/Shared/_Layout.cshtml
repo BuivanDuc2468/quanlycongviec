@@ -126,9 +126,19 @@
                 </div>
             </li>
             }
+            @if (User.IsInRole("Admin"))
+            {
+                <!-- Nav Item - Charts -->
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Statistical">
+                        <i class="fas fa-fw fa-chart-area"></i>
+                        <span>Statistical</span>
+                    </a>
+                </li>
+            }
             <!-- Divider -->
             <hr class="sidebar-divider">
-
+          
             <!-- Heading -->
             <div class="sidebar-heading">
                 Account
@@ -137,9 +147,9 @@
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                   aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Option:</span>
+                aria-expanded="true" aria-controls="collapsePages">
+                <i class="fas fa-fw fa-folder"></i>
+                <span>Option:</span>
                 </a>
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
@@ -147,15 +157,7 @@
                     </div>
                 </div>
             </li>
-
-            <!-- Nav Item - Charts -->
-            <li class="nav-item">
-                <a class="nav-link" asp-controller="Home" asp-action="Statistical">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Statistical</span>
-                </a>
-            </li>
-
+            
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 
@@ -171,7 +173,6 @@
             <div id="content">
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-                    
                     @RenderBody()
                 </div>
             </div><!-- /.container-fluid -->

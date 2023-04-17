@@ -5,9 +5,11 @@ using ToDoTask.Models.Contents;
 using ToDoTask.Data.Entities;
 using ToDoTask.Constants;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ToDoTask.Controllers
 {
+    [Authorize]
     public class UserController : Controller
     {
 
@@ -21,6 +23,8 @@ namespace ToDoTask.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
+        [Authorize]
+        [Route("Nguoi-dung")]
         public async Task<IActionResult> Index()
         {
             var result = from u in _context.Users
@@ -36,6 +40,8 @@ namespace ToDoTask.Controllers
                          };
             return View(result);
         }
+        [Authorize]
+        
         public async Task<IActionResult> Edit(string id)
         {
             var result = from u in _context.Users
@@ -90,6 +96,16 @@ namespace ToDoTask.Controllers
                 _context.Users.Update(user);
             }
             _context.SaveChanges();
+            return RedirectToAction("Index","User");
+        }
+        public async Task<IActionResult> Delete(string Id)
+        {
+            var user = await _context.Users.FindAsync(Id);
+            if (user == null)
+                return RedirectToAction("Index");
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
             return RedirectToAction("Index","User");
         }
     }

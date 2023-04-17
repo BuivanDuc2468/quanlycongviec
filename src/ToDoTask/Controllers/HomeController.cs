@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ using ToDoTask.Models.Contents;
 
 namespace ToDoTask.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -25,11 +27,11 @@ namespace ToDoTask.Controllers
             _userManager = userManager;
             _roleManager = _roleManager;
         }
-
         public IActionResult Index()
         {
             return View();
         }
+        [Authorize]
         public async Task<IActionResult> Dashboard()
         {
             var records = await _dbContext.StatisticProcedure.FromSqlRaw("EXECUTE statisticalTaskOfUser").ToListAsync();
@@ -52,15 +54,15 @@ namespace ToDoTask.Controllers
             ViewBag.percentWaittingTask = Math.Floor((float)jobWaitting / TotalTask * 100);
             ViewBag.percentInprogressTask = Math.Floor((float)jobInprogress / TotalTask * 100);
             ViewBag.percentDoneTask = Math.Floor((float)jobDone / TotalTask * 100);
-            if (_userManager.IsInRoleAsync(user, "Admin").Result)
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
             {
                 var totalUser = await _dbContext.Users.CountAsync();
-                ViewBag.TotalUSer = totalUser;
+                ViewBag.TotalUser = totalUser;
             }
             return View(records);
             
         }
-
+        [Authorize]
         public async Task<IActionResult> Statistical()
         {
             var records = await _dbContext.StatisticProcedure.FromSqlRaw("EXECUTE statisticalTaskOfUser").ToListAsync();

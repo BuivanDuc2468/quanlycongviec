@@ -9,6 +9,7 @@ using ToDoTask.Models;
 
 namespace ToDoTask.Controllers
 {
+    [Authorize]
     public class ProjectController : Controller
     {
 

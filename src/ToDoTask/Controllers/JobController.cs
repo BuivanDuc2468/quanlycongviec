@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Evaluation;
@@ -14,7 +15,9 @@ using ToDoTask.Services;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace ToDoTask.Controllers
+
 {
+    [Authorize]
     public class JobController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -38,7 +41,7 @@ namespace ToDoTask.Controllers
         {
             return View();
         }
-
+        [Authorize]
         // GET: JobController/Create
         public async Task<ActionResult> Create()
         {
