@@ -10,10 +10,10 @@ using ToDoTask.Models.Contents;
 
 namespace ToDoTask.Controllers
 {
+    [Authorize]
+    [Authorize(Roles = "Admin,Manager")]
     public class AssignController : Controller
-    {
-              
-        
+    {     
         private readonly ApplicationDbContext _context;
         public AssignController(ApplicationDbContext context)
         {

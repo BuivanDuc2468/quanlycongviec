@@ -11,6 +11,7 @@ using ToDoTask.Models;
 namespace ToDoTask.Controllers
 {
     [Authorize]
+    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
 

@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using ToDoTask.Data.Entities;
 using ToDoTask.Data;
 using ToDoTask.Services;
-using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.

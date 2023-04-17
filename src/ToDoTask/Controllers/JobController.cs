@@ -19,7 +19,6 @@ using ToDoTask.Services;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace ToDoTask.Controllers
-
 {
     [Authorize]
     public class JobController : Controller

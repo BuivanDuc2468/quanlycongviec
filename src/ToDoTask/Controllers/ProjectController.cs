@@ -10,6 +10,7 @@ using ToDoTask.Models;
 namespace ToDoTask.Controllers
 {
     [Authorize]
+    [Authorize(Roles = "Admin,Manager") ]
     public class ProjectController : Controller
     {
 
