@@ -22,6 +22,7 @@ namespace ToDoTask.Data
                        .HasKey(c => new {c.UserId, c.ProjectId });
             builder.HasSequence("TodoTaskSequence");
             builder.Entity<Statistics>().HasNoKey();
+            builder.Entity<StatisticPercent>().HasNoKey();
 
         }
 
@@ -30,7 +31,8 @@ namespace ToDoTask.Data
         public DbSet<Job> Jobs { set; get; }
         public DbSet<Permission> Permissions { set; get; }
         public DbSet<ProjectUser> ProjectUsers { set; get; }
-        public DbSet<Statistics> StatisticProcedure { set; get; }
+        public DbSet<Statistics> StatisticProcedures { set; get; }
+        public DbSet<StatisticPercent> StatisticPercents { set; get; }
         public DbSet<ProjectVm> ProjectVm { get; set; } = default!;
     }
 }

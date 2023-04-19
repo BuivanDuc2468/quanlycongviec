@@ -1,4 +1,5 @@
 ﻿@using ToDoTask.Models.Contents;
+@model StatisticPercentForView;
 @{
     ViewData["Title"] = "Dashboard";
     Layout = "_Layout";
@@ -38,7 +39,7 @@
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                             Total Projects
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.totalProject</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalProject</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-2x text-gray-300"></i>
@@ -79,29 +80,29 @@
         <!-- Project Card Example -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
+                <h6 class="m-0 font-weight-bold text-primary">projects</h6>
             </div>
             <div class="card-body">
                 <h4 class="small font-weight-bold">
-                    Waitting<span class="float-right">@ViewBag.percentWaitting %</span>
+                    Waitting<span class="float-right">@Model.PercentProject.PercentWaitting %</span>
                 </h4>
                 <div class="progress mb-4">
-                    <div class="progress-bar bg-danger" role="progressbar" style="width: @ViewBag.percentWaitting%"
-                         aria-valuenow="@ViewBag.percentWaitting" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: @Model.PercentProject.PercentWaitting%"
+                         aria-valuenow="@Model.PercentProject.PercentWaitting" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <h4 class="small font-weight-bold">
-                    InProgress<span class="float-right">@ViewBag.percentInprogress %</span>
+                    InProgress<span class="float-right">@Model.PercentProject.PercentProgress %</span>
                 </h4>
                 <div class="progress mb-4">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: @ViewBag.percentInprogress%"
-                         aria-valuenow="@ViewBag.percentInprogress" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: @Model.PercentProject.PercentProgress%"
+                         aria-valuenow="@Model.PercentProject.PercentProgress" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <h4 class="small font-weight-bold">
-                    Complete<span class="float-right">@ViewBag.percentDone %</span>
+                    Complete<span class="float-right">@Model.PercentProject.PercentDone %</span>
                 </h4>
                 <div class="progress mb-4">
-                    <div class="progress-bar" role="progressbar" style="width: @ViewBag.percentDone%"
-                         aria-valuenow="@ViewBag.percentDone" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar" role="progressbar" style="width: @Model.PercentProject.PercentDone%"
+                         aria-valuenow="@Model.PercentProject.PercentDone" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>
@@ -119,25 +120,25 @@
             </div>
             <div class="card-body">
                 <h4 class="small font-weight-bold">
-                    Waitting<span class="float-right">@ViewBag.percentWaittingTask %</span>
+                    Waitting<span class="float-right">@Model.PercentJob.PercentWaitting %</span>
                 </h4>
                 <div class="progress mb-4">
-                    <div class="progress-bar bg-danger" role="progressbar" style="width: @ViewBag.percentWaittingTask%"
-                         aria-valuenow="@ViewBag.percentWaittingTask" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: @Model.PercentJob.PercentWaitting%"
+                         aria-valuenow="@Model.PercentJob.PercentWaitting" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <h4 class="small font-weight-bold">
-                    InProgress<span class="float-right">@ViewBag.percentInprogressTask %</span>
+                    InProgress<span class="float-right">@Model.PercentJob.PercentProgress %</span>
                 </h4>
                 <div class="progress mb-4">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: @ViewBag.percentInprogressTask%"
-                         aria-valuenow="@ViewBag.percentInprogressTask" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: @Model.PercentJob.PercentProgress%"
+                         aria-valuenow="@Model.PercentJob.PercentProgress" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <h4 class="small font-weight-bold">
-                    Complete<span class="float-right">@ViewBag.percentDoneTask %</span>
+                    Complete<span class="float-right">@Model.PercentJob.PercentDone %</span>
                 </h4>
                 <div class="progress mb-4">
-                    <div class="progress-bar" role="progressbar" style="width: @ViewBag.percentDoneTask%"
-                         aria-valuenow="@ViewBag.percentDoneTask" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar" role="progressbar" style="width: @Model.PercentJob.PercentDone%"
+                         aria-valuenow="@Model.PercentJob.PercentDone" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>

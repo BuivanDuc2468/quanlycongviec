@@ -34,38 +34,32 @@ namespace ToDoTask.Controllers
         [Authorize]
         public async Task<IActionResult> Dashboard()
         {
-            var records = await _dbContext.StatisticProcedure.FromSqlRaw("EXECUTE statisticalTaskOfUser").ToListAsync();
-            var project = await _dbContext.Projects.ToListAsync();
-            var Task = await _dbContext.Jobs.ToListAsync();
-            var projectWaitting = project.Count(a=>a.Status == (int)Status.Waitting );
-            var projectInprogress = project.Count(a=>a.Status == (int)Status.Processing);
-            var projectDone = project.Count(a=>a.Status == (int)Status.Done);
-            var jobWaitting = Task.Count(a => a.Status == (int)Status.Waitting);
-            var jobInprogress = Task.Count(a => a.Status == (int)Status.Processing);
-            var jobDone = Task.Count(a => a.Status == (int)Status.Done);
             var user = _userManager.GetUserAsync(User).Result;
-            var totalProject = project.Count();
-            var TotalTask = Task.Count();
-            ViewBag.totalProject = totalProject;
-            ViewBag.percentWaitting = Math.Floor((float)projectWaitting / totalProject * 100);
-            ViewBag.percentInprogress = Math.Floor((float)projectInprogress / totalProject * 100);
-            ViewBag.percentDone = Math.Floor((float)projectDone / totalProject * 100);
-            ViewBag.TotalTask = TotalTask;
-            ViewBag.percentWaittingTask = Math.Floor((float)jobWaitting / TotalTask * 100);
-            ViewBag.percentInprogressTask = Math.Floor((float)jobInprogress / TotalTask * 100);
-            ViewBag.percentDoneTask = Math.Floor((float)jobDone / TotalTask * 100);
+            var totalTask = await _dbContext.Jobs.CountAsync();
+            var totalProject = await _dbContext.Projects.CountAsync();
+            ViewBag.TotalProject = totalProject;
+            ViewBag.TotalTask = totalTask;
+            var percentJob = await _dbContext.StatisticPercents.FromSqlRaw("EXECUTE PercentOfJob").ToListAsync();
+            var percentProject = await _dbContext.StatisticPercents.FromSqlRaw("EXECUTE PercentOfProject").ToListAsync();
+            StatisticPercent prJob = percentJob[0];
+            StatisticPercent prProject = percentProject[0];
             if (await _userManager.IsInRoleAsync(user, "Admin"))
             {
                 var totalUser = await _dbContext.Users.CountAsync();
                 ViewBag.TotalUser = totalUser;
             }
-            return View(records);
+            StatisticPercentForView model = new StatisticPercentForView
+            {
+                PercentJob = prJob,
+                PercentProject = prProject
+            };
+            return View(model);
             
         }
         [Authorize]
         public async Task<IActionResult> Statistical()
         {
-            var records = await _dbContext.StatisticProcedure.FromSqlRaw("EXECUTE statisticalTaskOfUser").ToListAsync();
+            var records = await _dbContext.StatisticProcedures.FromSqlRaw("EXECUTE statisticalTaskOfUser").ToListAsync();
             return View(records);
 
         }
