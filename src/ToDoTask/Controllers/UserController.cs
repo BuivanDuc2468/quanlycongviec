@@ -27,33 +27,84 @@ namespace ToDoTask.Controllers
         }
         [Authorize]
         [Route("Nguoi-dung")]
-        public async Task<IActionResult> Index(string? searchString, int page = 1)
+        public async Task<IActionResult> Index(string? searchString, int page)
         {
-            var result = (from u in _context.Users
-                         join ur in _context.UserRoles on u.Id equals ur.UserId
-                         join r in _context.Roles on ur.RoleId equals r.Id
-                         where r.Name != Roles.Admin.ToString()
-                         select new UserRoleView {
-                             UserId = u.Id,
-                             Name = u.Name,
-                             Email = u.Email, 
-                             RoleName = r.Name,
-                             RoleId = r.Id
-                         }).ToList();
+            List<UserRoleView> userRoleList;
+            
             const int pageSize = 10;
+            int totalUser = await _context.Users.CountAsync();
+            int countPage = (int)Math.Ceiling((double)totalUser / pageSize);
             if (page < 1)
                 page = 1;
-            var recsCount = result.Count();
-            var pager = new Pager(recsCount, page, pageSize);
-            int recSkip = (page - 1) * pageSize;
+            if (page > countPage)
+                page = countPage;
             if (!String.IsNullOrEmpty(searchString))
             {
-                result = result.Where(n => n.Name.Contains(searchString) || n.Email.Contains(searchString)).ToList();
+                var result = (from u in _context.Users
+                              join ur in _context.UserRoles on u.Id equals ur.UserId
+                              join r in _context.Roles on ur.RoleId equals r.Id
+                              where( r.Name != Roles.Admin.ToString() &&( u.Name.Contains(searchString) || u.Email.Contains(searchString)))
+                              select new UserRoleView
+                              {
+                                  UserId = u.Id,
+                                  Name = u.Name,
+                                  Email = u.Email,
+                                  RoleName = r.Name,
+                                  RoleId = r.Id
+                              }).Skip((page - 1) * pageSize).Take(pageSize);
+                userRoleList = await result.ToListAsync();
             }
-            var data = result.Skip(recSkip).Take(pager.PageSize).ToList();
-            ViewBag.Pager = pager;
+            else
+            {
+                var result = (from u in _context.Users
+                              join ur in _context.UserRoles on u.Id equals ur.UserId
+                              join r in _context.Roles on ur.RoleId equals r.Id
+                              where (r.Name != Roles.Admin.ToString())
+                              select new UserRoleView
+                              {
+                                  UserId = u.Id,
+                                  Name = u.Name,
+                                  Email = u.Email,
+                                  RoleName = r.Name,
+                                  RoleId = r.Id
+                              }).Skip((page - 1) * pageSize).Take(pageSize);
+                userRoleList = await result.ToListAsync();
+            }
             ViewData["CurrentFilter"] = searchString;
-            return View(data);
+            ViewBag.CountPage = countPage;
+            ViewBag.CurrentPage = page;
+            return View(userRoleList);
+        }
+        [Authorize]
+        public async Task<IActionResult> Create()
+        {
+            var roles = await _context.Roles.ToListAsync();
+            if(roles != null)
+            ViewBag.Roles = roles;
+            return View();
+        } 
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Create(UserCreate userCreate)
+        {
+            if(ModelState != null)
+            {
+                var userC = new User
+                {
+                    UserName = userCreate.UserName,
+                    Email = userCreate.Email,
+                    Name = userCreate.Name,
+                    EmailConfirmed = true,
+                    PhoneNumberConfirmed = true
+                };
+                var userInDb = await _userManager.FindByEmailAsync(userC.Email);
+                if (userInDb == null)
+                {
+                    await _userManager.CreateAsync(userC, userCreate.Password);
+                    await _userManager.AddToRoleAsync(userC, userCreate.Role);
+                }
+            }
+            return RedirectToAction("Index","User");
         }
         [Authorize]
         

@@ -4,22 +4,17 @@
 @model IEnumerable<ToDoTask.Data.Entities.Project>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "List Project";
     Layout = "~/Views/Shared/_Layout.cshtml";
-
-    Pager pager = new Pager();
-    int pagerNo = 0;
-    if(ViewBag.Pager != null)
+    var pagingModel = new PagingModel()
     {
-        pager = ViewBag.Pager;
-        pagerNo = pager.CurrentPage;
-    }
-
+        currentPage = ViewBag.CurrentPage,
+        countPages = ViewBag.CountPage,
+        generateUrl = (int? p) => Url.Action("Index", new { page = p })
+    };
 }
 
 <h1>List Project</h1>
-
-
 <div>
     <!-- Topbar -->
     <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
@@ -31,8 +26,8 @@
         <form asp-action="Index" method="get">
             <div class="form-actions no-color">
                 <p>
-                    Find: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-                    <input type="submit" value="Search" class="btn btn-default" /> 
+                    Find: <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" />
+                    <input type="submit" value="Search" class="btn btn-primary" /> 
                 </p>
             </div>
         </form>
@@ -40,7 +35,7 @@
     </nav>
     <!-- End of Topbar -->
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
 <table class="table">
     <thead>
@@ -106,5 +101,5 @@
     }
     </tbody>
 </table>
-   <partial name="_pager" model="@pager" />
+    <partial name="_Paging" model="@pagingModel" />
 </div>

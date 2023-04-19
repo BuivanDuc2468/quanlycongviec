@@ -31,25 +31,54 @@ namespace ToDoTask.Controllers
             _sequenceService = sequenceService;
         }
         // GET: JobController
-        public async Task<ActionResult> Index(string? searchString, int page = 1)
+        public async Task<ActionResult> Index(string? searchString, int page)
         {
-            List<Job> job = await _context.Jobs.ToListAsync();
-            var project = await _context.Projects.ToListAsync();
-            ViewBag.Project = project;
-            const int pageSize = 10;
-            if (page < 1)
-                page = 1;
-            var recsCount = job.Count();
-            var pager = new Pager(recsCount, page, pageSize);
-            int recSkip = (page - 1) * pageSize;
-            if (!String.IsNullOrEmpty(searchString))
+            List<Job> jobs;
+            var projects = await _context.Projects.ToListAsync();
+            ViewBag.Project = projects;
+            var user = (from d in _context.ProjectUsers
+                        join u in _context.Users on d.UserId equals u.Id
+                        select new UserVm()
+                        {
+                            UserId = u.Id,
+                            NameUser = u.Name
+                        }).Distinct().ToList();
+            ViewBag.Users = user;
+            const int pageSize = 2;
+            int totalJob = await _context.Jobs.CountAsync();
+            if(totalJob > 0)
             {
-                job = job.Where(n => n.Name.Contains(searchString) || n.Content.Contains(searchString)).ToList();
+                int countPage = (int)Math.Ceiling((double)totalJob / pageSize);
+                if (page < 1)
+                    page = 1;
+                if (page > countPage)
+                    page = countPage;
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    var query = (from job in _context.Jobs
+                                .Where(n => n.Name.Contains(searchString) || n.Content.Contains(searchString))
+                                 orderby job.DateLine descending
+                                 select job).Skip((page - 1) * pageSize).Take(pageSize);
+                    jobs = await query.ToListAsync();
+                }
+                else
+                {
+                    var query = (from job in _context.Jobs
+                                 orderby job.DateLine descending
+                                 select job).Skip((page - 1) * pageSize).Take(pageSize);
+                    jobs = await query.ToListAsync();
+                }
+                ViewData["CurrentFilter"] = searchString;
+                ViewBag.CountPage = countPage;
+                ViewBag.CurrentPage = page;
+
+                return View(jobs);
             }
-            var data = job.Skip(recSkip).Take(pager.PageSize).ToList();
-            ViewBag.Pager = pager;
-            ViewData["CurrentFilter"] = searchString;
-            return View(data);
+            else
+            {
+                return RedirectToAction("Create","Job");
+            }
+            
         }
 
         // GET: JobController/Details/5
@@ -152,7 +181,7 @@ namespace ToDoTask.Controllers
         {
             var job = await _context.Jobs.FindAsync(id);
             if (job == null)
-                return NotFound("Job is not found");
+                return Content("Job is not found");
             _context.Jobs.Remove(job);
             var result = await _context.SaveChangesAsync();
             if (result > 0)
@@ -162,11 +191,11 @@ namespace ToDoTask.Controllers
             return RedirectToAction("Index", "Job");
         }
         
-        public async Task<String> UpdateJob(int id, int status)
+        public async Task<bool> UpdateJob(int id, int status)
         {
             var job = await _context.Jobs.FindAsync(id);
             if (job == null)
-                return "Job is not found";
+                return false;
             if(status != job.Status)
             {
                 if(status != 0)
@@ -175,10 +204,10 @@ namespace ToDoTask.Controllers
                     {
                         job.DateComplete = DateTime.Now;
                     }
-
-                    job.DateStart = DateTime.Now;
+                    
                     if (status == 1)
                     {
+                        job.DateStart = DateTime.Now;
                         var project = await _context.Projects.FindAsync(job.ProjectId);
                         if (project != null)
                         {
@@ -190,107 +219,128 @@ namespace ToDoTask.Controllers
                 job.Status = status;
                 _context.Jobs.Update(job);
                 var result =  await _context.SaveChangesAsync();
-                if (result > 0) { return "OK"; } else return "Not OK";
+                if (result > 0) { return true; } else return false;
             }
-            return "OK";
+            return true;
         }
         
         public async Task<IActionResult> ListJobWaitting(string? searchString, int page = 1)
         {
-            var job = (from j in _context.Jobs
-                       join p in _context.Projects on j.ProjectId equals p.Id
-                       join u in _context.Users on j.UserId equals u.Id
-                       where j.Status == (int)Status.Waitting
-                       select new JobForView()
-                           {
-                               ProjectName = p.Name,
-                               Id = j.Id,
-                               Name = j.Name,
-                               Content = j.Content,
-                               DateLine = j.DateLine,
-                               UserName  = u.Name,
-                               DateAssign = j.DateAssign,
-                               Status = (int)Status.Waitting,
-                           }).Distinct().ToList();
+            List<JobForView> jobs;
+            const int pageSize = 2;
+            ViewData["CurrentFilter"] = searchString;
+            int totalJob = await _context.Jobs.Where(j => j.Status == (int)Status.Waitting).CountAsync();
+            if (totalJob > 0)
+            {
+                int countPage = (int)Math.Ceiling((double)totalJob / pageSize);
+                jobs = await PagingForJob(_context, searchString, (int)Status.Waitting, page, pageSize, countPage);
+                ViewBag.CountPage = countPage;
+                ViewBag.CurrentPage = page;
+                return View(jobs);
+            }
 
-            const int pageSize = 10;
-            if (page < 1)
-                page = 1;
-            var recsCount = job.Count();
-            var pager = new Pager(recsCount, page, pageSize);
-            int recSkip = (page - 1) * pageSize;
-            if (!String.IsNullOrEmpty(searchString))
+            else
             {
-                job = job.Where(n => n.Name.Contains(searchString) || n.Content.Contains(searchString)).ToList();
+                ViewBag.CountPage = 0;
+                ViewBag.CurrentPage = page;
+                return View();
             }
-            var data = job.Skip(recSkip).Take(pager.PageSize).ToList();
-            ViewBag.Pager = pager;
-            ViewData["CurrentFilter"] = searchString;
-            return View(data);
         }
-        public async Task<IActionResult> ListJobInProgress(string? searchString, int page = 1)
+        public async Task<IActionResult> ListJobInProgress(string? searchString, int page=1)
         {
-            var job = (from j in _context.Jobs
-                       join p in _context.Projects on j.ProjectId equals p.Id
-                       join u in _context.Users on j.UserId equals u.Id
-                       where j.Status == (int)Status.Processing
-                       select new JobForView()
-                       {
-                            ProjectName = p.Name,
-                            Id = j.Id,
-                            Name = j.Name,
-                            Content = j.Content,
-                            Status = j.Status,
-                            DateStart = j.DateStart,
-                            UserName  = u.Name,
-                            UserId = u.Id
-                       }).Distinct().ToList();
-            const int pageSize = 10;
-            if (page < 1)
-                page = 1;
-            var recsCount = job.Count();
-            var pager = new Pager(recsCount, page, pageSize);
-            int recSkip = (page - 1) * pageSize;
-            if (!String.IsNullOrEmpty(searchString))
-            {
-                job = job.Where(n => n.Name.Contains(searchString) || n.UserName.Contains(searchString)).ToList();
-            }
-            var data = job.Skip(recSkip).Take(pager.PageSize).ToList();
-            ViewBag.Pager = pager;
+            List<JobForView> jobs;
+            const int pageSize = 2;
             ViewData["CurrentFilter"] = searchString;
-            return View(data);
+            int totalJob = await _context.Jobs.Where(j => j.Status == (int)Status.Processing).CountAsync();
+            if (totalJob > 0)
+            {
+                int countPage = (int)Math.Ceiling((double)totalJob / pageSize);
+                jobs = await PagingForJob(_context, searchString, (int)Status.Processing, page, pageSize, countPage);
+                ViewBag.CountPage = countPage;
+                ViewBag.CurrentPage = page;
+                return View(jobs);
+            }
+
+            else
+            {
+                ViewBag.CountPage = 0;
+                ViewBag.CurrentPage = page;
+                return View();
+            }
         }
-        public async Task<IActionResult> ListJobComplete(string? searchString, int page = 1)
+        public async Task<IActionResult> ListJobComplete(string? searchString, int page=1)
         {
-            var job = (from j in _context.Jobs
-                       join p in _context.Projects on j.ProjectId equals p.Id
-                       join u in _context.Users on j.UserId equals u.Id
-                       where j.Status == (int)Status.Done
-                       select new JobForView()
-                           {
-                               ProjectName = p.Name,
-                               Id = j.Id,
-                               Name = j.Name,
-                               Content = j.Content,
-                               Status = j.Status,
-                               DateStart = j.DateStart,
-                               DateComplete = j.DateComplete,
-                               UserName  = u.Name
-                           }).Distinct().ToList();
-            const int pageSize = 10;
-            if (page < 1)
-                page = 1;
-            var recsCount = job.Count();
-            var pager = new Pager(recsCount, page, pageSize);
-            int recSkip = (page - 1) * pageSize;
+            List<JobForView> jobs;
+            const int pageSize = 2;
+            ViewData["CurrentFilter"] = searchString;
+            int totalJob = await _context.Jobs.Where(j => j.Status == (int)Status.Done).CountAsync();
+            if (totalJob > 0)
+            {
+                int countPage = (int)Math.Ceiling((double)totalJob / pageSize);
+                jobs = await PagingForJob(_context, searchString, (int)Status.Done, page, pageSize, countPage);
+                ViewBag.CountPage = countPage;
+                ViewBag.CurrentPage = page;
+                return View(jobs);
+            }
+
+            else
+            {
+                ViewBag.CountPage = 0;
+                ViewBag.CurrentPage = page;
+                return View();
+            }
+        }
+        public static async Task<List<JobForView>> PagingForJob(ApplicationDbContext context,string? searchString,int statusJob,int page, int pageSize,int countPage)
+        {
+            List<JobForView> jobs;
+            if(page < 1) { page = 1; }
+            if(page > countPage) { page = countPage; }
             if (!String.IsNullOrEmpty(searchString))
             {
-                job = job.Where(n => n.Name.Contains(searchString) || n.UserName.Contains(searchString)).ToList();
+                var query = (from j in context.Jobs
+                             join p in context.Projects on j.ProjectId equals p.Id
+                             join u in context.Users on j.UserId equals u.Id
+                             where ((j.Status == statusJob) && (j.Name.Contains(searchString) || j.Content.Contains(searchString)))
+                             select new JobForView()
+                             {
+                                 ProjectName = p.Name,
+                                 Id = j.Id,
+                                 Name = j.Name,
+                                 Content = j.Content,
+                                 DateLine = j.DateLine,
+                                 UserName = u.Name,
+                                 DateStart = j.DateStart,
+                                 DateAssign = j.DateAssign,
+                                 Status = j.Status,
+                                 DateComplete = j.DateComplete
+                             }).Skip((page - 1) * pageSize).Take(pageSize);
+
+                jobs = await query.ToListAsync();
             }
-            var data = job.Skip(recSkip).Take(pager.PageSize).ToList();
-            ViewBag.Pager = pager;
-            ViewData["CurrentFilter"] = searchString;
-            return View(data);
+            else
+            {
+                var query = (from j in context.Jobs
+                             join p in context.Projects on j.ProjectId equals p.Id
+                             join u in context.Users on j.UserId equals u.Id
+                             where j.Status == statusJob
+                             select new JobForView()
+                             {
+                                 ProjectName = p.Name,
+                                 Id = j.Id,
+                                 Name = j.Name,
+                                 Content = j.Content,
+                                 DateLine = j.DateLine,
+                                 UserName = u.Name,
+                                 DateStart = j.DateStart,
+                                 DateAssign = j.DateAssign,
+                                 Status = j.Status,
+                                 DateComplete=j.DateComplete
+                             }).Skip((page - 1) * pageSize).Take(pageSize);
+
+                jobs = await query.ToListAsync();
+            }
+            
+            return jobs;
         }
 
     }

@@ -8,13 +8,12 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    Pager pager = new Pager();
-    int pagerNo = 0;
-    if(ViewBag.Pager != null)
+    var pagingModel = new PagingModel()
     {
-        pager = ViewBag.Pager;
-        pagerNo = pager.CurrentPage;
-    }
+        currentPage = ViewBag.CurrentPage,
+        countPages = ViewBag.CountPage,
+        generateUrl = (int? p) => Url.Action("Nguoi-dung", new { page = p })
+    };
 }
 
 <h1>List User</h1>
@@ -75,7 +74,7 @@
         }
     </tbody>
 </table>
- <partial name="_pager" model="@pager" />
+<partial name="_Paging" model="@pagingModel" />
 @section Scripts {
 <script>
         function confirmDelete(Id){

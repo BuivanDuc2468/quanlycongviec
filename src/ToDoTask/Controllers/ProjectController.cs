@@ -6,6 +6,7 @@ using ToDoTask.Data.Entities;
 using ToDoTask.Models.Contents;
 using System.Security.Claims;
 using ToDoTask.Models;
+using ToDoTask.Helpers;
 
 namespace ToDoTask.Controllers
 {
@@ -23,33 +24,49 @@ namespace ToDoTask.Controllers
         
         // GET: ProjectController
         [Authorize]
-        public async Task<IActionResult> Index(string? searchString, int page=1)
+        public async Task<IActionResult> Index(string? searchString, int page)
         {
-
-            var user = (from d in _context.Projects
-                        join f in _context.Users on d.UserId equals f.Id
-                        select new UserVm()
+            List<Project> projects;
+            var user = (from d in _context.Projects join f in _context.Users on d.UserId equals f.Id select new UserVm()
                         {
                             UserId = f.Id,
                             NameUser = f.Name
                         }).Distinct().ToList();
             ViewBag.User = user;
             const int pageSize = 10;
-            if (page < 1)
-                page = 1;
-            List<Project> projects = await _context.Projects.ToListAsync();
-            var recsCount = projects.Count();
-            var pager = new Pager(recsCount, page, pageSize);
-            int recSkip = (page - 1) * pageSize;
-            if (!String.IsNullOrEmpty(searchString))
+            int totalProject = await _context.Projects.CountAsync();
+            if (totalProject > 0)
             {
-                projects = projects.Where(n => n.Name.Contains(searchString) || n.Description.Contains(searchString)).ToList();
+                int countPage = (int)Math.Ceiling((double)totalProject / pageSize);
+                if (page < 1)
+                    page = 1;
+                if (page > countPage)
+                    page = countPage;
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    var query = (from project in _context.Projects
+                             .Where(n => n.Name.Contains(searchString) || n.Description.Contains(searchString))
+                                 orderby project.DateLine descending
+                                 select project).Skip((page - 1) * pageSize).Take(pageSize);
+                    projects = await query.ToListAsync();
+                }
+                else
+                {
+                    var query = (from project in _context.Projects
+                                 orderby project.DateLine descending
+                                 select project).Skip((page - 1) * pageSize).Take(pageSize);
+                    projects = await query.ToListAsync();
+                }
+            
+                ViewData["CurrentFilter"] = searchString;
+                ViewBag.CountPage = countPage;
+                ViewBag.CurrentPage = page;
+                return View(projects);
             }
-            var data = projects.Skip(recSkip).Take(pager.PageSize).ToList();
-            ViewBag.Pager = pager;
-            ViewData["CurrentFilter"] = searchString;
-            data = data.OrderByDescending(s => s.CreatedAt).ToList();
-            return View(data);
+            else
+            {
+                return RedirectToAction("Create", "Project");
+            }
         }
 
         public ActionResult Create()
@@ -88,7 +105,7 @@ namespace ToDoTask.Controllers
         {
             var project = await _context.Projects.FindAsync(id);
             if (project == null)
-                return NotFound("Project with id is not found");
+                return Content("Project with id is not found");
 
             ProjectVm projectVm = ProjectVm(project);
             return View(projectVm);
@@ -104,7 +121,7 @@ namespace ToDoTask.Controllers
             {
                 var project = await _context.Projects.FindAsync(id);
                 if (project == null)
-                    return NotFound("Project is not found");
+                    return Content("Project is not found");
 
                 project.Name = request.Name;
                 project.Description = request.Description;
@@ -118,7 +135,7 @@ namespace ToDoTask.Controllers
                 }
                 else
                 {
-                    return BadRequest("Update project failed");
+                    return Content("Update project failed");
                 }
             }
             catch
@@ -133,14 +150,11 @@ namespace ToDoTask.Controllers
         {
             var project = await _context.Projects.FindAsync(id);
             if (project == null)
-                return NotFound("Project with id: {id} is not found");
+                return Content("Project with id: {id} is not found");
             _context.Projects.Remove(project);
             var result = await _context.SaveChangesAsync();
-            if (result > 0)
-            {
-                return Redirect("Index");
-            }
-            return View();
+            
+            return RedirectToAction("Index","Project");
         }
 
         // POST: ProjectController/Delete/5
