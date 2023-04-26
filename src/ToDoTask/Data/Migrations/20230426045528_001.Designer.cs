@@ -12,15 +12,15 @@ using ToDoTask.Data;
 namespace ToDoTask.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230410134930_addDateLineofJob")]
-    partial class addDateLineofJob
+    [Migration("20230426045528_001")]
+    partial class _001
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "7.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -53,7 +53,7 @@ namespace ToDoTask.Data.Migrations
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -78,7 +78,7 @@ namespace ToDoTask.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("RoleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -103,7 +103,7 @@ namespace ToDoTask.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("UserClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -125,7 +125,7 @@ namespace ToDoTask.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("UserLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -140,7 +140,7 @@ namespace ToDoTask.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -159,7 +159,7 @@ namespace ToDoTask.Data.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable("UserTokens", (string)null);
                 });
 
             modelBuilder.Entity("ToDoTask.Data.Entities.Job", b =>
@@ -169,7 +169,10 @@ namespace ToDoTask.Data.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(MAX)");
+
+                    b.Property<DateTime>("DateAssign")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateComplete")
                         .HasColumnType("datetime2");
@@ -187,60 +190,52 @@ namespace ToDoTask.Data.Migrations
 
                     b.Property<string>("ProjectId")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Jobs");
-                });
-
-            modelBuilder.Entity("ToDoTask.Data.Entities.Permission", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Permissions");
-                });
-
-            modelBuilder.Entity("ToDoTask.Data.Entities.Project", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(200)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId", "ProjectId");
+
+                    b.ToTable("Jobs");
+                });
+
+            modelBuilder.Entity("ToDoTask.Data.Entities.Project", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateLine")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(MAX)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Projects");
                 });
@@ -248,14 +243,14 @@ namespace ToDoTask.Data.Migrations
             modelBuilder.Entity("ToDoTask.Data.Entities.ProjectUser", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProjectId")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("UserId", "ProjectId");
+
+                    b.HasIndex("ProjectId");
 
                     b.ToTable("ProjectUsers");
                 });
@@ -328,25 +323,7 @@ namespace ToDoTask.Data.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("ToDoTask.Data.Entities.UserJob", b =>
-                {
-                    b.Property<string>("JobId")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<string>("UserId")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<DateTime>("DateAssign")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("JobId", "UserId");
-
-                    b.ToTable("UserJobs");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("ToDoTask.Models.Contents.ProjectVm", b =>
@@ -355,6 +332,9 @@ namespace ToDoTask.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateLine")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -375,6 +355,44 @@ namespace ToDoTask.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProjectVm");
+                });
+
+            modelBuilder.Entity("ToDoTask.Models.Contents.StatisticPercent", b =>
+                {
+                    b.Property<int>("PercentDone")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PercentProgress")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PercentWaitting")
+                        .HasColumnType("int");
+
+                    b.ToTable("StatisticPercents");
+                });
+
+            modelBuilder.Entity("ToDoTask.Models.Contents.Statistics", b =>
+                {
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OnSchedule")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Processing")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SlowProgress")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalJob")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Waitting")
+                        .HasColumnType("int");
+
+                    b.ToTable("StatisticProcedures");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -426,6 +444,67 @@ namespace ToDoTask.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ToDoTask.Data.Entities.Job", b =>
+                {
+                    b.HasOne("ToDoTask.Data.Entities.User", null)
+                        .WithMany("Jobs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ToDoTask.Data.Entities.ProjectUser", "ProjectUser")
+                        .WithMany("Jobs")
+                        .HasForeignKey("UserId", "ProjectId")
+                        .IsRequired();
+
+                    b.Navigation("ProjectUser");
+                });
+
+            modelBuilder.Entity("ToDoTask.Data.Entities.Project", b =>
+                {
+                    b.HasOne("ToDoTask.Data.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ToDoTask.Data.Entities.ProjectUser", b =>
+                {
+                    b.HasOne("ToDoTask.Data.Entities.Project", "Project")
+                        .WithMany("ProjectUsers")
+                        .HasForeignKey("ProjectId")
+                        .IsRequired();
+
+                    b.HasOne("ToDoTask.Data.Entities.User", "User")
+                        .WithMany("ProjectUsers")
+                        .HasForeignKey("UserId")
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ToDoTask.Data.Entities.Project", b =>
+                {
+                    b.Navigation("ProjectUsers");
+                });
+
+            modelBuilder.Entity("ToDoTask.Data.Entities.ProjectUser", b =>
+                {
+                    b.Navigation("Jobs");
+                });
+
+            modelBuilder.Entity("ToDoTask.Data.Entities.User", b =>
+                {
+                    b.Navigation("Jobs");
+
+                    b.Navigation("ProjectUsers");
                 });
 #pragma warning restore 612, 618
         }

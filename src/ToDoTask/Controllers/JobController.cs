@@ -1,22 +1,12 @@
-﻿using Azure;
-using Azure.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using System.Reflection.Metadata;
 using ToDoTask.Constants;
 using ToDoTask.Data;
 using ToDoTask.Data.Entities;
-using ToDoTask.Models;
 using ToDoTask.Models.Contents;
 using ToDoTask.Services;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace ToDoTask.Controllers
 {
@@ -31,7 +21,7 @@ namespace ToDoTask.Controllers
             _sequenceService = sequenceService;
         }
         // GET: JobController
-        public async Task<ActionResult> Index(string? searchString, int page)
+        public async Task<ActionResult> Index(int page)
         {
             List<Job> jobs;
             var projects = await _context.Projects.ToListAsync();
@@ -53,22 +43,12 @@ namespace ToDoTask.Controllers
                     page = 1;
                 if (page > countPage)
                     page = countPage;
-                if (!String.IsNullOrEmpty(searchString))
-                {
-                    var query = (from job in _context.Jobs
-                                .Where(n => n.Name.Contains(searchString) || n.Content.Contains(searchString))
-                                 orderby job.DateLine descending
-                                 select job).Skip((page - 1) * pageSize).Take(pageSize);
-                    jobs = await query.ToListAsync();
-                }
-                else
-                {
-                    var query = (from job in _context.Jobs
-                                 orderby job.DateLine descending
-                                 select job).Skip((page - 1) * pageSize).Take(pageSize);
-                    jobs = await query.ToListAsync();
-                }
-                ViewData["CurrentFilter"] = searchString;
+                
+                var query = (from job in _context.Jobs
+                                orderby job.DateLine descending
+                                select job).Skip((page - 1) * pageSize).Take(pageSize);
+                jobs = await query.ToListAsync();
+                
                 ViewBag.CountPage = countPage;
                 ViewBag.CurrentPage = page;
 
@@ -100,7 +80,6 @@ namespace ToDoTask.Controllers
             ViewBag.Project = project;
             return View();
         }
-        //POST : Job/loadUserOfProject
         [HttpPost]
         public async Task<List<User>> loadUserOfProject(string projectId)
         {
@@ -342,6 +321,32 @@ namespace ToDoTask.Controllers
             
             return jobs;
         }
-
+        [HttpGet]
+        public async Task<IActionResult> Search(string? keySearch)
+        {
+            if (!string.IsNullOrEmpty(keySearch))
+            {
+                var data = (from job in _context.Jobs
+                            join user in _context.Users on job.UserId equals user.Id
+                            join project in _context.Projects on job.ProjectId equals project.Id
+                            where ((job.Name.Contains(keySearch)) || (job.Content.Contains(keySearch)) || (project.Name.Contains(keySearch)))
+                            select new
+                            {
+                                id = job.Id,
+                                projectName = project.Name,
+                                name = job.Name,
+                                userName = user.Name,
+                                dateStart = job.DateStart, 
+                                dateComplete = job.DateComplete,
+                                status = job.Status == 0 ? "Waitting" : job.Status == 1 ? "Processing" : "Done"
+                            }).Take(10);
+                var data2 = await data.ToListAsync();
+                return Json(data2);
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

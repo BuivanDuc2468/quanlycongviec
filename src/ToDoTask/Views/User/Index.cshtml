@@ -6,7 +6,7 @@
 @model IEnumerable<ToDoTask.Models.Contents.UserRoleView>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Người Dùng";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var pagingModel = new PagingModel()
     {
@@ -36,7 +36,7 @@
 </nav>
 <!-- End of Topbar -->
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Thêm Mới người dùng</a>
 </p>
 <table class="table">
     <thead>

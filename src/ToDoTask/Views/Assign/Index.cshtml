@@ -1,24 +1,25 @@
 ﻿@using ToDoTask.Data.Entities;
 @using ToDoTask.Models.Contents;
-@model IEnumerable<ToDoTask.Data.Entities.ProjectUser>
+
+@model IEnumerable<ProjectUserForView>
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>List Assign</h1>
+<h1>Danh sách phân công</h1>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Tạo mới</a>
 </p>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.UserId)
+                @Html.DisplayNameFor(model => model.ProjectId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ProjectId)
+                @Html.DisplayNameFor(model => model.Users)
             </th>
             <th></th>
         </tr>
@@ -27,31 +28,51 @@
         @foreach (var item in Model)
         {
             <tr>
+                
                 <td>
-                    @foreach (var u in ViewBag.User as ICollection<User>)
+                    @foreach (var p in ViewBag.Project as ICollection<Project>)
                     {
-                        if (item.UserId == u.Id)
-                        {
-                            @Html.DisplayFor(modelItem => u.Name)
-                        }
-                    }
-
-                </td>
-                <td>
-                    @foreach (var p in ViewBag.Project as ICollection<ProjectVm>)
-                    {
-                        if (item.ProjectId == p.Id)
+                        if (item.ProjectId== p.Id)
                         {
                             @Html.DisplayFor(modelItem => p.Name)
                         }
                     }
                 </td>
+                
                 <td>
-                    <a asp-action="Delete" asp-route-id="@item.UserId" asp-route-id2="@item.ProjectId">Delete</a>
+                        @string.Join(",", item.Users)
+                </td>
+                
+                <td>
+                    <button onclick="DeleteAssign('@item.ProjectId')">Delete</button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function DeleteAssign(id) {
+            if (confirm("Are you sure?") == true) {
+                $.ajax({
+                    type: 'get',
+                    url: '/Assign/Delete?id=' + id,
+                    dataType: 'text',
+                    success: function (data) {
+                        alert("Thành công");
+                        location.reload();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert("Thất bại");
+                    }
+                });
+            }
 
+        }
+
+    </script>
+}
 

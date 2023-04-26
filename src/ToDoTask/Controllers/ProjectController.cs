@@ -5,33 +5,32 @@ using ToDoTask.Data;
 using ToDoTask.Data.Entities;
 using ToDoTask.Models.Contents;
 using System.Security.Claims;
-using ToDoTask.Models;
-using ToDoTask.Helpers;
+using System.Drawing.Printing;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Net;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ToDoTask.Controllers
 {
-    [Authorize]
-    [Authorize(Roles = "Admin,Manager") ]
+    [Authorize(Roles = "Admin,Manager")]
     public class ProjectController : Controller
     {
 
         private readonly ApplicationDbContext _context;
-        
+
         public ProjectController(ApplicationDbContext context)
         {
             _context = context;
         }
-        
-        // GET: ProjectController
-        [Authorize]
-        public async Task<IActionResult> Index(string? searchString, int page)
+
+        public async Task<IActionResult> Index(int page)
         {
-            List<Project> projects;
+            List<Project> projects = null;
             var user = (from d in _context.Projects join f in _context.Users on d.UserId equals f.Id select new UserVm()
-                        {
-                            UserId = f.Id,
-                            NameUser = f.Name
-                        }).Distinct().ToList();
+            {
+                UserId = f.Id,
+                NameUser = f.Name
+            }).Distinct().ToList();
             ViewBag.User = user;
             const int pageSize = 10;
             int totalProject = await _context.Projects.CountAsync();
@@ -42,39 +41,27 @@ namespace ToDoTask.Controllers
                     page = 1;
                 if (page > countPage)
                     page = countPage;
-                if (!String.IsNullOrEmpty(searchString))
-                {
-                    var query = (from project in _context.Projects
-                             .Where(n => n.Name.Contains(searchString) || n.Description.Contains(searchString))
-                                 orderby project.DateLine descending
-                                 select project).Skip((page - 1) * pageSize).Take(pageSize);
-                    projects = await query.ToListAsync();
-                }
-                else
-                {
-                    var query = (from project in _context.Projects
-                                 orderby project.DateLine descending
-                                 select project).Skip((page - 1) * pageSize).Take(pageSize);
-                    projects = await query.ToListAsync();
-                }
-            
-                ViewData["CurrentFilter"] = searchString;
+
+                var query = (from project in _context.Projects
+                             orderby project.DateLine descending
+                             select project).Skip((page - 1) * pageSize).Take(pageSize);
+                projects = await query.ToListAsync();
+
                 ViewBag.CountPage = countPage;
                 ViewBag.CurrentPage = page;
                 return View(projects);
             }
             else
             {
-                return RedirectToAction("Create", "Project");
+                return View(projects);
             }
         }
 
         public ActionResult Create()
         {
-          return View();
+            return View();
         }
 
-        // POST: ProjectController/Create
         [HttpPost]
         public async Task<ActionResult> Create(ProjectCreateVm request)
         {
@@ -85,7 +72,7 @@ namespace ToDoTask.Controllers
                 Description = request.Description,
                 Status = 0,
                 CreatedAt = DateTime.Now,
-                UserId= userId.Value,
+                UserId = userId.Value,
                 DateLine = request.DateLine
             };
             _context.Projects.Add(project);
@@ -100,7 +87,6 @@ namespace ToDoTask.Controllers
             }
         }
 
-        // GET: ProjectController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
             var project = await _context.Projects.FindAsync(id);
@@ -111,12 +97,11 @@ namespace ToDoTask.Controllers
             return View(projectVm);
         }
 
-        // POST: ProjectController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(string id, ProjectVm request)
         {
-            
+
             try
             {
                 var project = await _context.Projects.FindAsync(id);
@@ -131,7 +116,7 @@ namespace ToDoTask.Controllers
                 var result = await _context.SaveChangesAsync();
                 if (result > 0)
                 {
-                    return RedirectToAction("Index","Project");
+                    return RedirectToAction("Index", "Project");
                 }
                 else
                 {
@@ -144,27 +129,21 @@ namespace ToDoTask.Controllers
             }
         }
 
-        // GET: ProjectController/Delete/5
+        [HttpGet]
         public async Task<ActionResult> Delete(string id)
-
-        {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null)
-                return Content("Project with id: {id} is not found");
-            _context.Projects.Remove(project);
-            var result = await _context.SaveChangesAsync();
-            
-            return RedirectToAction("Index","Project");
-        }
-
-        // POST: ProjectController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var project = await _context.Projects.FindAsync(id);
+                if (project == null)
+                    return BadRequest("Project is not found.");
+                _context.Projects.Remove(project);
+                var result = await _context.SaveChangesAsync();
+                if (result > 0)
+                {
+                    return Content("Success.");
+                }
+                return BadRequest("Delete Error.");
             }
             catch
             {
@@ -175,15 +154,38 @@ namespace ToDoTask.Controllers
         {
             return new ProjectVm()
             {
-                 Id= project.Id,
-                 Name = project.Name ,   
-                 Description = project.Description,
-                 Status =project.Status,
-                 CreatedAt= project.CreatedAt,
-                 UserId = project.UserId,
-                 DateLine=project.DateLine
+                Id = project.Id,
+                Name = project.Name,
+                Description = project.Description,
+                Status = project.Status,
+                CreatedAt = project.CreatedAt,
+                UserId = project.UserId,
+                DateLine = project.DateLine
             };
         }
-        
+        [HttpGet]
+        public async Task<IActionResult> Search(string? keySearch)
+        {
+            if (!string.IsNullOrEmpty(keySearch)){
+                var data = (from p in _context.Projects
+                            join user in _context.Users on p.UserId equals user.Id
+                            where ((p.Name.Contains(keySearch)) || (p.Description.Contains(keySearch)))
+                            select new
+                            {
+                                id = p.Id,
+                                name = p.Name,
+                                createdAt = p.CreatedAt.ToString().Substring(0, p.CreatedAt.ToString().Length - 8),
+                                dateLine = p.DateLine.ToString().Substring(0, p.CreatedAt.ToString().Length - 8),
+                                userName = user.Name,
+                                status = p.Status == 0 ? "Waitting" : p.Status == 1 ? "Processing" : "Done"
+                            }).Take(10);
+                var data2 = await data.ToListAsync();
+                return Json(data2);
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

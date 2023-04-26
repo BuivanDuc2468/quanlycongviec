@@ -22,12 +22,30 @@ namespace ToDoTask.Controllers
         [Authorize]
         public async Task<ActionResult> Index()
         {
-            var projectUser = await _context.ProjectUsers.ToArrayAsync();
-            var project = await _context.Projects.ToArrayAsync();
-            var projectvms = project.Select(c => ProjectVm(c)).ToArray();
+            var query = from Pru in _context.ProjectUsers 
+                        group Pru by Pru.ProjectId into g
+                        select new ProjectUserForView
+                        {
+                            ProjectId = g.Key,
+                            Users = g.Select(s => s.UserId).ToList()
+                        };
             var user = await _context.Users.ToArrayAsync();
-            ViewBag.Project = projectvms;
-            ViewBag.User = user;
+            var project = await _context.Projects.ToArrayAsync();
+            ViewBag.Project = project;
+            Dictionary<string, string> dictUser = new Dictionary<string, string>();
+            foreach (var u in user)
+            {
+                dictUser.Add(u.Id, u.Name);
+            }
+            var projectUser = await query.ToListAsync();
+            for (int i = 0;i < projectUser.Count;i++)
+            {
+                for (int j = 0; j < projectUser[i].Users.Count; j++)
+                {
+                    projectUser[i].Users[j] = (dictUser[projectUser[i].Users[j]]);
+                }
+
+            }
             return View(projectUser);
         }
         [Authorize]
@@ -73,19 +91,25 @@ namespace ToDoTask.Controllers
             }
         }
         [Authorize]
-        public async Task<IActionResult> Delete(string id,string id2)
+        public async Task<ActionResult> Delete(string id,string id2)
         {
-
-            var projectUser = await _context.ProjectUsers.FindAsync(id,id2);
-            if (projectUser == null)
-                return NotFound("ProjectUser is not found");
-            _context.ProjectUsers.Remove(projectUser);
-            var result = await _context.SaveChangesAsync();
-            if (result > 0)
+            try
             {
-                return RedirectToAction("Index","Assign");
+                var projectUser = await _context.ProjectUsers.FindAsync(id, id2);
+                if (projectUser == null)
+                    return NotFound("ProjectUser is not found");
+                _context.ProjectUsers.Remove(projectUser);
+                var result = await _context.SaveChangesAsync();
+                if (result > 0)
+                {
+                    return Content("Success.");
+                }
+                return BadRequest("Delete Error.");
             }
-            return View();
+            catch
+            {
+                return View();
+            }
         }
         private static ProjectVm ProjectVm(Project project)
         {

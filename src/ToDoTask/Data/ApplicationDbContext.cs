@@ -9,27 +9,50 @@ namespace ToDoTask.Data
     public class ApplicationDbContext : IdentityDbContext<User>
     {
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> option)
+            : base(option)
         {
         }
-        protected override void OnModelCreating(ModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(builder);
+            base.OnModelCreating(modelBuilder);
 
-            builder.Entity<IdentityRole>().Property(x => x.Id).HasMaxLength(50).IsUnicode(false);
-            builder.Entity<ProjectUser>()
+
+            foreach(var entityType in modelBuilder.Model.GetEntityTypes()) {
+
+                var tableName = entityType.GetTableName();
+                if (tableName.StartsWith("AspNet"))
+                {
+                    entityType.SetTableName(tableName.Substring(6));
+                }
+            }
+            modelBuilder.Entity<IdentityRole>().Property(x => x.Id).HasMaxLength(50).IsUnicode(false);
+            modelBuilder.Entity<ProjectUser>()
                        .HasKey(c => new {c.UserId, c.ProjectId });
-            builder.HasSequence("TodoTaskSequence");
-            builder.Entity<Statistics>().HasNoKey();
-            builder.Entity<StatisticPercent>().HasNoKey();
+
+            modelBuilder.Entity<ProjectUser>()
+                .HasOne(pc => pc.Project)
+                .WithMany(p => p.ProjectUsers)
+                .HasForeignKey(pc => pc.ProjectId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            modelBuilder.Entity<ProjectUser>()
+                .HasOne(pc => pc.User)
+                .WithMany(c => c.ProjectUsers)
+                .HasForeignKey(pc => pc.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            modelBuilder.HasSequence("TodoTaskSequence");
+            modelBuilder.Entity<Statistics>().HasNoKey();
+            modelBuilder.Entity<StatisticPercent>().HasNoKey();
+            modelBuilder.Entity<Job>()
+            .HasOne(j => j.ProjectUser)
+            .WithMany(p => p.Jobs)
+            .HasForeignKey(p => new { p.UserId, p.ProjectId})
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
 
         }
-
         public DbSet<Project> Projects { set; get; }
-       
         public DbSet<Job> Jobs { set; get; }
-        public DbSet<Permission> Permissions { set; get; }
         public DbSet<ProjectUser> ProjectUsers { set; get; }
         public DbSet<Statistics> StatisticProcedures { set; get; }
         public DbSet<StatisticPercent> StatisticPercents { set; get; }

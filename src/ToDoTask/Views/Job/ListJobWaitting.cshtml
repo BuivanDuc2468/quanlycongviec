@@ -13,9 +13,10 @@
             };
 }
 
-<h1>List Job Waitting</h1>
+
 @if (Model != null)
 {
+    <h1>List Job Waitting</h1>
     <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
         <!-- Sidebar Toggle (Topbar) -->
         <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -82,9 +83,13 @@
         </tbody>
     </table>
     <partial name="_Paging" model="@pagingModel" />
-
 }
-    @section Scripts{
+else
+{
+    <h4>Không có công việc nào đang chờ</h4>
+    <a asp-action="Dashboard" asp-controller="Home">Quay về trang chủ</a>
+}
+@section Scripts{
     <script>
             function SaveStatusOfJob(id){
                 let x= 'Status.'+id;

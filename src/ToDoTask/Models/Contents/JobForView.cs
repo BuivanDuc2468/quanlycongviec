@@ -9,9 +9,7 @@ namespace ToDoTask.Models.Contents
     {
         [Display(Name = "Aassigned person")]
         public string UserName { get; set; }
-        public string UserId { get; set; }
         [Display(Name = "Project Name")]
         public string ProjectName { get; set; }
-        public DateTime DateAssign { get; set; }
     } 
 }

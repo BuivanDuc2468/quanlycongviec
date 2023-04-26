@@ -6,15 +6,20 @@
 @{
     ViewData["Title"] = "List Project";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var pagingModel = new PagingModel()
+    PagingModel pagingModel = null;
+    if (ViewBag.CurrentPage != null)
     {
-        currentPage = ViewBag.CurrentPage,
-        countPages = ViewBag.CountPage,
-        generateUrl = (int? p) => Url.Action("Index", new { page = p })
-    };
+        pagingModel = new PagingModel()
+                {
+                    currentPage = ViewBag.CurrentPage,
+                    countPages = ViewBag.CountPage,
+                    generateUrl = (int? p) => Url.Action("Index", new { page = p })
+                };
+    }
+    
 }
-
-<h1>List Project</h1>
+@if(Model != null){
+<h1>Danh sách dự án</h1>
 <div>
     <!-- Topbar -->
     <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
@@ -23,25 +28,25 @@
             <i class="fa fa-bars"></i>
         </button>
         <!-- Topbar Search -->
-        <form asp-action="Index" method="get">
+        
             <div class="form-actions no-color">
                 <p>
-                    Find: <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" />
-                    <input type="submit" value="Search" class="btn btn-primary" /> 
+                    <input id = "IdInput" /> 
+                   <button id="searchTo" onclick="Show()">Tìm Kiếm</button>
                 </p>
             </div>
-        </form>
+       
         <!-- Topbar Navbar -->
     </nav>
     <!-- End of Topbar -->
 <p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Tạo mới</a>
 </p>
-<table class="table">
+ <table class="table" id="tableData">
     <thead>
         <tr>
             <th>Project Name</th>
-            <th>Description</th>
+            @*<th>Description</th>*@
             <th>Status</th>
             <th>Date Created</th>
             <th>DateLine</th>
@@ -55,9 +60,9 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
-            <td>
+            @*<td>
                 @Html.DisplayFor(modelItem => item.Description)
-            </td>
+            </td>*@
             <td>
                 @switch (item.Status)
                 {
@@ -95,11 +100,70 @@
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <button onclick="DeleteProject('@item.Id')">Delete</button>
             </td>
         </tr>
     }
     </tbody>
 </table>
-    <partial name="_Paging" model="@pagingModel" />
+        @if (pagingModel != null)
+        {
+            <partial name="_Paging" model="@pagingModel" />
+        }
 </div>
+}
+else{
+<h4>Không có dự án nào</h4>
+<a asp-action="Create" asp-controller="Project">Tạo mới dự án</a>
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+       function Show(){
+            var keySearch = $('#IdInput').val();
+            
+            $.ajax({
+                type: 'GET',
+                url: '/Project/Search?keySearch=' + keySearch,
+                dataType: 'json',
+                success: function (data) {
+                    // Đổ dữ liệu lên view
+               
+                    var html = '';
+                    $.each(data, function (index, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.name + '</td>';
+                        html += '<td>' + item.status + '</td>';
+                        html += '<td>' + item.createdAt + '</td>';
+                        html += '<td>' + item.dateLine + '</td>';
+                        html += '<td>' + item.userName + '</td>';
+                        html += '<td><a href="/Project/Edit?id=' + item.id + '">Edit </a>'
+                            + '<button onclick="DeleteProject(\'' + item.id + '\')"> Delete</button></td>';
+                        html += '</tr>';
+                    });
+                    $('#tableData tbody').html(html);
+                }
+            });
+       }
+        function DeleteProject(id){
+            if(confirm("Are you sure?") == true){
+                $.ajax({
+                    type: 'get',
+                    url: '/Project/Delete?id=' + id,
+                    dataType: 'text',
+                    success: function (data) {
+                        alert("Thành công");
+                        location.reload();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert("Thất bại");
+                    }
+                });
+            }
+            
+        }
+
+    </script>
+}

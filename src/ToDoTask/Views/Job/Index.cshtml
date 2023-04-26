@@ -21,20 +21,20 @@
         <i class="fa fa-bars"></i>
     </button>
     <!-- Topbar Search -->
-    <form asp-action="Index" method="get">
-        <div class="form-actions no-color">
-            <p>
-                Find: <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" />
-                <input type="submit" value="Search" class="btn btn-default" />
-            </p>
-        </div>
-    </form>
+  
+    <div class="form-actions no-color">
+        <p>
+            <input id="IdInput" />
+            <button id="searchTo" onclick="Show()">Tìm Kiếm</button>
+        </p>
+    </div>
+  
     <!-- Topbar Navbar -->
 </nav>
 <p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Tạo mới</a>
 </p>
-<table class="table">
+<table class="table" id="tableData">
     <thead>
         <tr>
             <th>
@@ -44,7 +44,7 @@
                 @Html.DisplayNameFor(model => model.Name)
             </th>
             <th>
-                User Name
+                Người dùng
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Status)
@@ -111,11 +111,63 @@
                 @Html.DisplayFor(modelItem => item.DateComplete)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <button><a asp-action="Edit" asp-route-id="@item.Id">Edit</a></button>
+                <button onclick="DeleteJob('@item.Id')">Delete</button>
             </td>
         </tr>
 }
     </tbody>
 </table>
 <partial name="_Paging" model="@pagingModel" />
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function Show() {
+            var keySearch = $('#IdInput').val();
+
+            $.ajax({
+                type: 'GET',
+                url: '/Job/Search?keySearch=' + keySearch,
+                dataType: 'json',
+                success: function (data) {
+                    // Đổ dữ liệu lên view
+                    
+                    var html = '';
+                    $.each(data, function (index, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.projectName + '</td>';
+                        html += '<td>' + item.name + '</td>';
+                        html += '<td>' + item.userName + '</td>';
+                        html += '<td>' + item.status + '</td>';
+                        html += '<td>' + item.dateStart + '</td>';
+                        html += '<td>' + item.dateComplete + '</td>';
+                        html += '<td><a href="/Job/Edit?id=' + item.id + '">Edit </a>'
+                            + '<button onclick="DeleteJob(\'' + item.id + '\')"> Delete</button></td>';
+                        html += '</tr>';
+                    });
+                    $('#tableData tbody').html(html);
+                }
+            });
+        }
+        function DeleteJob(id) {
+            if (confirm("Are you sure?") == true) {
+                $.ajax({
+                    type: 'get',
+                    url: '/Job/Delete?id=' + id,
+                    dataType: 'text',
+                    success: function (data) {
+                        alert("Thành công");
+                        location.reload();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert("Thất bại");
+                    }
+                });
+            }
+
+        }
+
+    </script>
+}

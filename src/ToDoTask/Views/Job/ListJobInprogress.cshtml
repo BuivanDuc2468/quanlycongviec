@@ -12,9 +12,9 @@
         generateUrl = (int? p) => Url.Action("ListJobComplete", new { page = p })
     };
 }
-<h1>List Job In Progress</h1>
 @if (Model != null)
 {
+<h1>List Job In Progress</h1>
     <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
         <!-- Sidebar Toggle (Topbar) -->
         <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -83,6 +83,11 @@
         </tbody>
     </table>
     <partial name="_Paging" model="@pagingModel" />
+}
+else
+{
+    <h4>Không có công việc nào đang làm</h4>
+    <a asp-action="Dashboard" asp-controller="Home">Quay về trang chủ</a>
 }
 @section Scripts{
     <script>

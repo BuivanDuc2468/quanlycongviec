@@ -8,5 +8,7 @@ namespace ToDoTask.Data.Entities
     {
         public string? Name { get; set; }
         public string? ProfilePicture { get; set; }
+        public virtual ICollection<Job> Jobs { get; set; }
+        public virtual ICollection<ProjectUser> ProjectUsers { get; set; }
     }
 }

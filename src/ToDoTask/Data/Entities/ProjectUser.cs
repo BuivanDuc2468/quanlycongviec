@@ -8,15 +8,13 @@ namespace ToDoTask.Data.Entities
     public class ProjectUser
     {
        
-        [MaxLength(50)]
-        [Column(TypeName = "varchar(50)")]
         [Required]
-        [DisplayName("User")]
+        [DisplayName("Người Dùng")]
         public string UserId { get; set; }
-        [MaxLength(50)]
-        [Column(TypeName = "varchar(50)")]
         [Required]
-        [DisplayName("Project")]
         public string ProjectId { get; set; }
+        public virtual Project Project { get; set; }
+        public virtual User User { get; set; }
+        public virtual ICollection<Job> Jobs { get; set; }
     }
 }

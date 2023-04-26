@@ -12,9 +12,9 @@
         generateUrl = (int? p) => Url.Action("ListJobComplete", new { page = p })
     };
 }
-<h1>List Job Complete</h1>
 @if (Model != null)
 {
+<h1>List Job Complete</h1>
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
     <!-- Sidebar Toggle (Topbar) -->
     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -34,45 +34,50 @@
 
 
 
-        <table class="table">
-            <thead>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.UserName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DateStart)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DateComplete)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
                 <tr>
-                    <th>
-                        @Html.DisplayNameFor(model => model.Name)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.UserName)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.DateStart)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.DateComplete)
-                    </th>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserName)
+                    </td>
+
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DateStart)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DateComplete)
+                    </td>
+
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Name)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.UserName)
-                        </td>
+            }
+        </tbody>
 
-                        <td>
-                            @Html.DisplayFor(modelItem => item.DateStart)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.DateComplete)
-                        </td>
-
-                    </tr>
-                }
-            </tbody>
-
-        </table>
-        <partial name="_Paging" model="@pagingModel" />
-    }
+    </table>
+    <partial name="_Paging" model="@pagingModel" />
+}
+else
+{
+    <h4>Không có công việc nào đã hoàn thành</h4>
+    <a asp-action="Dashboard" asp-controller="Home">Quay về trang chủ</a>
+}

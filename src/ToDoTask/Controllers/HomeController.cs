@@ -54,14 +54,12 @@ namespace ToDoTask.Controllers
                 PercentProject = prProject
             };
             return View(model);
-            
         }
         [Authorize]
         public async Task<IActionResult> Statistical()
         {
             var records = await _dbContext.StatisticProcedures.FromSqlRaw("EXECUTE statisticalTaskOfUser").ToListAsync();
             return View(records);
-
         }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
