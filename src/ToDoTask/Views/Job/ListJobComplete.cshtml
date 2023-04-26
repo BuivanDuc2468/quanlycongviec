@@ -49,6 +49,7 @@
                 <th>
                     @Html.DisplayNameFor(model => model.DateComplete)
                 </th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -68,16 +69,65 @@
                     <td>
                         @Html.DisplayFor(modelItem => item.DateComplete)
                     </td>
-
+                    <td><button onclick="ViewDetail(@item.Id)">Chi Tiết</td>
                 </tr>
             }
         </tbody>
 
     </table>
     <partial name="_Paging" model="@pagingModel" />
+    @* Modal view detail*@
+    <div class="modal" id="ModalDetail" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chi tiết công việc</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h4>Tên công việc</h4>
+                    <p id="JobName"></p>
+                    <br />
+                    <h4>Nội dung công việc</h4>
+                    <p id="JobContent"></p>
+                    <br />
+                    <h4>Hạn cuối</h4>
+                    <p id="JobDeadline"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @* Modal view detail*@
 }
 else
 {
     <h4>Không có công việc nào đã hoàn thành</h4>
     <a asp-action="Dashboard" asp-controller="Home">Quay về trang chủ</a>
+}
+@section Scripts{
+    <script>
+        
+        function ViewDetail(id) {
+            $.ajax({
+                url: "/Job/Detail",
+                type: "get",
+                data: "id=" + id,
+                dataType: 'json',
+                success: function (data) {
+                    $('#JobName').html(data.name);
+                    $('#JobContent').html(data.content);
+                    $('#JobDeadline').html(data.dateLine);
+                    $('#ModalDetail').modal('show');
+                },
+                error: function (e) {
+                    console.log(e.message);
+                }
+            });
+        }
+    </script>
 }

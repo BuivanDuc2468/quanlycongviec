@@ -60,13 +60,17 @@ namespace ToDoTask.Controllers
             }
             
         }
-
-        // GET: JobController/Details/5
-        public ActionResult Details(int id)
+        [HttpGet]
+        public async Task<ActionResult> Detail(int id)
         {
-            return View();
+            var job = await _context.Jobs.FindAsync(id);
+            if(job == null)
+            {
+                return Content("Error : Job Not found");
+            }else
+                return Json(job);
         }
-        [Authorize]
+            [Authorize]
         // GET: JobController/Create
         public async Task<ActionResult> Create()
         {
